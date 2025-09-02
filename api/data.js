@@ -1,15 +1,20 @@
 // api/data.js
-import fs from 'fs';
-import path from 'path';
+import cloudbase from '@cloudbase/node-sdk'
 
-export default function handler(req, res) {
-  const filePath = path.join(process.cwd(), 'server', 'data.json');
+const app = cloudbase.init({
+  env: process.env.TCB_ENV_ID,
+  secretId: process.env.TCB_SECRET_ID,
+  secretKey: process.env.TCB_SECRET_KEY
+})
 
-  fs.readFile(filePath, 'utf8', (err, data) => {
-    if (err) {
-      console.error('❌ Error reading data.json:', err);
-      return res.status(500).json({ error: '无法读取数据文件' });
-    }
-    res.status(200).json(JSON.parse(data));
-  });
+const db = app.database()
+
+export default async function handler(req, res) {
+  try {
+    const result = await db.collection('budgets').get()
+    res.status(200).json(result.data)
+  } catch (err) {
+    console.error('❌ 数据读取失败:', err)
+    res.status(500).json({ error: '读取数据库失败' })
+  }
 }
