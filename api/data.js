@@ -1,6 +1,7 @@
 // api/data.js
 import cloudbase from '@cloudbase/node-sdk'
 
+console.log("✅ data.js 已部署")
 const app = cloudbase.init({
   env: process.env.TCB_ENV_ID,
   secretId: process.env.TCB_SECRET_ID,
