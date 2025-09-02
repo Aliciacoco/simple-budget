@@ -1,24 +1,23 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+# node
+# 忽略依赖，防止上传几千个包
+node_modules/
+# 忽略打包产物（vite 构建）
+dist/
+# 忽略私密环境变量
+.env
+# macOS 自动生成的文件，没用
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+# VSCode 的本地配置，别人不需要
+.vscode/
+# VSCode 的本地配置，别人不需要
+*.log
+
+# build outputs
+*.zip
+*.tgz
+# 忽略你打包下载的临时压缩文件
+*.tar
+
+# system
+# Windows 系统生成的小图标缓存文件
+Thumbs.db

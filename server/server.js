@@ -7,7 +7,10 @@ const fs = require('fs');
 const path = require('path');
 //*****创建一个后端应用
 const app = express();
-const PORT = 3001;
+
+//Vercel/Railway 等平台：平台会自动设置 process.env.PORT，这行代码就能自动适配
+const PORT = process.env.PORT || 3001;
+
 
 // 允许跨域请求（前后端分开开发必须）
 const cors = require('cors');

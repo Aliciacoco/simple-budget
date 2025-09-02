@@ -13,7 +13,7 @@ function App() {
   //渲染出卡片JSX结构后，自动执行请求数据
   useEffect(() => {
   //向本地的后端服务器发起请求，请求地址是：
-  fetch('http://localhost:3001/data')
+  fetch('/api/data')
   //res 是 fetch() 的响应结果，是一个 Response 类型的对象，里面包含了data的url链接
   //res.json()就是把json文件拿出来
     .then(res => res.json())
@@ -28,7 +28,7 @@ function App() {
 
   //保存函数
   const saveDataToBackend = (newData) => {
-  fetch('http://localhost:3001/save', {
+  fetch('/api/save', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
