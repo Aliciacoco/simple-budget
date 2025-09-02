@@ -1,0 +1,62 @@
+[
+  {
+    "month": "2025年9月",
+    "cards": [
+      {
+        "title": "生活必要",
+        "items": [
+          {
+            "id": "17567854158214044",
+            "text": "haha",
+            "amount": "997",
+            "status": "pending"
+          }
+        ]
+      },
+      {
+        "title": "娱乐享受",
+        "items": [
+          {
+            "id": "17567854158213974",
+            "text": "",
+            "amount": "",
+            "status": "pending"
+          }
+        ]
+      },
+      {
+        "title": "教育学习",
+        "items": [
+          {
+            "id": "17567854158218146",
+            "text": "",
+            "amount": "",
+            "status": "pending"
+          }
+        ]
+      },
+      {
+        "title": "大额支出",
+        "items": [
+          {
+            "id": "17567854158215393",
+            "text": "",
+            "amount": "",
+            "status": "pending"
+          }
+        ]
+      },
+      {
+        "title": "赠与",
+        "items": [
+          {
+            "id": "17567854158215575",
+            "text": "",
+            "amount": "",
+            "status": "pending"
+          }
+        ]
+      }
+    ]
+  }
+]
