@@ -1,5 +1,5 @@
 //引入usestate状态管理，useeffect监听状态变化
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 //引入实现拖拽排序的库组件
 import {
   DragDropContext,
@@ -13,12 +13,15 @@ function BudgetCard({ title, items, onUpdate, totalAll }) {
     //定义localItems是当前卡片的本地状态副本
   const [localItems, setLocalItems] = useState(items);
 
+   const hasMounted = useRef(false);  // ⬅️ 首次挂载判断
   //监听localItems的变化
   useEffect(() => {
-    //******【重要】调用 onUpdate：子组件中 useEffect 监听 localItems
-    onUpdate(localItems);
+    if (hasMounted.current) {
+      onUpdate(localItems);
+    } else {
+      hasMounted.current = true;
+    }
   }, [localItems]);
-
 
 
   //新增
@@ -88,9 +91,9 @@ function BudgetCard({ title, items, onUpdate, totalAll }) {
             <div ref={provided.innerRef} {...provided.droppableProps}>
               {localItems.map((item, i) => (
                 <Draggable
-                  draggableId={item.id || i.toString()}
+                  draggableId={String(item.id ?? i)}   // ✅ 强制转成字符串
                   index={i}
-                  key={item.id || i}
+                  key={String(item.id ?? i)}           // ✅ key 也保持一致
                 >
                   {(provided) => (
                     <div
