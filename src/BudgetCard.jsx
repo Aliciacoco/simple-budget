@@ -1,5 +1,9 @@
 //引入usestate状态管理，useeffect监听状态变化
 import { useState, useEffect, useRef } from 'react';
+import isEqual from 'lodash/isEqual';
+
+
+
 //引入实现拖拽排序的库组件
 import {
   DragDropContext,
@@ -31,12 +35,22 @@ function BudgetCard({ title, items, onUpdate, totalAll }) {
       { id: Date.now().toString(), text: '', amount: '', status: 'pending' },
     ]);
   };
+
+
   //修改项
   const updateItem = (index, key, value) => {
     const newItems = [...localItems];
-    newItems[index][key] = value;
-    setLocalItems(newItems);
-  };
+    const oldItem = localItems[index];
+
+    // ✅ 只在值真正变化时再更新（避免无限循环）
+    if (!isEqual(oldItem[key], value)) {
+      newItems[index] = { ...oldItem, [key]: value };
+      setLocalItems(newItems);
+    }
+    };
+
+
+
   //删除
   const deleteItem = (index) => {
     const newItems = localItems.filter((_, i) => i !== index);
@@ -138,7 +152,7 @@ function BudgetCard({ title, items, onUpdate, totalAll }) {
                         value={item.amount}
                         placeholder="金额"
                         onChange={(e) =>
-                          updateItem(i, 'amount', e.target.value)
+                          updateItem(i, 'amount', Number(e.target.value))
                         }
                         style={{ width: 80 }}
                       />

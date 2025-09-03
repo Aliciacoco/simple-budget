@@ -226,21 +226,17 @@ function App() {
                   onUpdate={(updatedItems) => {
                     const oldItems = _.cloneDeep(data[i].cards[j].items);
 
-                    // ✅ 只在值发生实际变化时才写入
-                    //这里用了 lodash 的 _.isEqual(a, b) 来判断两个对象或数组是否“值上完全一样”
-                    if (!_.isEqual(oldItems, updatedItems)) {
-                      const newData = [...data];
-                      newData[i].cards[j].items = updatedItems;
-                      setData(newData);
-
                       // ✅ 判断有变化才触发写数据库
-  if (!_.isEqual(oldItems, updatedItems)) {
-    console.log("📝 触发写入数据库");
-    saveMonthDataToSupabase(newData[i]);
-  } else {
-    console.log("🚫 没变化，不写入");
-  }
-                    }
+                      if (!_.isEqual(oldItems, updatedItems)) {
+                        const newData = _.cloneDeep(data);
+                        newData[i].cards[j].items = updatedItems;
+                        setData(newData);
+                        
+                        console.log("📝 触发写入数据库");
+                        saveMonthDataToSupabase(newData[i]);
+                      } else {
+                        console.log("🚫 没变化，不写入");
+                      }
                   }}
 
                   
