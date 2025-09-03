@@ -7,9 +7,21 @@ import { useRef } from 'react';
 function App() {
   const [data, setData] = useState([]);
   //它在组件重新加载时，默认是 false
-  const hasMountedRef = useRef(false);
+
+  const currentMonthRef = useRef(null);
+
 
   useEffect(() => {
+
+    // 页面加载后滚动到当前月
+  if (currentMonthRef.current) {
+    currentMonthRef.current.scrollIntoView({
+      behavior: 'smooth', // 或 'auto'
+      block: 'start'
+    });
+  }
+
+
     async function loadFromSupabase() {
       console.log("🚀 正在从 Supabase 读取数据...");
       const { data: rows, error } = await supabase
@@ -189,12 +201,19 @@ function App() {
         </div>
       )}
 
-      {data.map((monthData, i) => {
+      {[...data]
+  .sort((a, b) => {
+    if (a.year !== b.year) return a.year - b.year;
+    return a.month - b.month;
+  }).map((monthData, i) => {
         const { year, month, cards } = monthData;
         const totalAll = cards.flatMap(c => c.items).reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
 
+        const now = new Date();
+        const isCurrentMonth = year === now.getFullYear() && month === now.getMonth() + 1;
+
         return (
-          <div key={`${year}-${month}`} style={{ marginBottom: 48 }}>
+          <div key={`${year}-${month}`} ref={isCurrentMonth ? currentMonthRef : null} style={{ marginBottom: 48 }}>
             <div style={{
               display: 'flex',
               alignItems: 'center',
@@ -231,7 +250,7 @@ function App() {
                         const newData = _.cloneDeep(data);
                         newData[i].cards[j].items = updatedItems;
                         setData(newData);
-                        
+
                         console.log("📝 触发写入数据库");
                         saveMonthDataToSupabase(newData[i]);
                       } else {

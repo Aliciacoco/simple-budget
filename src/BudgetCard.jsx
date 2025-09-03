@@ -148,7 +148,8 @@ function BudgetCard({ title, items, onUpdate, totalAll }) {
                         style={{ flex: 1 }}
                       />
                       <input
-                        type="number"
+                        type="text"
+                        inputMode="numeric"
                         value={item.amount}
                         placeholder="金额"
                         onChange={(e) =>
