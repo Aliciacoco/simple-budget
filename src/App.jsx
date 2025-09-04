@@ -62,39 +62,38 @@ function App() {
   }, []);
 
   const saveMonthDataToSupabase = useCallback(_.debounce(async (monthData) => {
+
+
     const { year, month, cards } = monthData;
 
-    const { error: deleteError } = await supabase
-      .from('budgets')
-      .delete()
-      .match({ year: Number(year), month: Number(month) });
+  for (const card of cards) {
+    for (const item of card.items) {
+      const record = {
+        year,
+        month,
+        title: card.title,
+        text: item.text,
+        amount: parseFloat(item.amount) || 0,
+        status: item.status,
+      };
 
-    if (deleteError) {
-      console.error("❌ 删除旧数据失败：", deleteError.message);
-      return;
+      if (!item.id) {
+        // 没有 id 就插入
+        const { data, error } = await supabase.from('budgets').insert([record]).select(); // select 返回 id
+        if (!error && data && data[0]) {
+          item.id = data[0].id; // 设置回去，供后续更新用
+        }
+      } else {
+        // 有 id 就更新
+        await supabase.from('budgets').update(record).eq('id', item.id);
+      }
     }
+  }
 
-    const rowsToInsert = [];
-    cards.forEach(card => {
-      card.items.forEach(item => {
-        rowsToInsert.push({
-          year,
-          month,
-          title: card.title,
-          text: item.text,
-          amount: parseFloat(item.amount) || 0,
-          status: item.status,
-          created_at: new Date().toISOString()
-        });
-      });
-    });
+  console.log(`✅ 保存完成`);
 
-    const { error: insertError } = await supabase.from('budgets').insert(rowsToInsert);
-    if (insertError) {
-      console.error("❌ 插入失败：", insertError.message);
-    } else {
-      console.log(`✅ 成功保存 ${year}年${month}月 的 ${rowsToInsert.length} 条数据`);
-    }
+
+
   }, 500), []);
 
   const addNextMonth = () => {
@@ -154,7 +153,7 @@ function App() {
       width: '100%',
       padding: '0 16px',
       boxSizing: 'border-box',
-      marginTop: 32, 
+      //marginTop: 32, 
       }}>
       {data.length === 0 && (
         <div style={{

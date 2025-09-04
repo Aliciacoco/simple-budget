@@ -1,7 +1,7 @@
 //引入usestate状态管理，useeffect监听状态变化
 import { useState, useEffect, useRef } from 'react';
 import isEqual from 'lodash/isEqual';
-
+import { supabase } from '../lib/supabaseClient';
 import { IoClose } from "react-icons/io5";
 
 
@@ -31,14 +31,13 @@ function BudgetCard({ title, items, onUpdate, totalAll }) {
   }, [localItems]);
 
 
-  //新增
-  const addItem = () => {
-    setLocalItems([
-      ...localItems,
-      { id: Date.now().toString(), text: '', amount: '', status: 'pending' },
-    ]);
-  };
-
+// 新增项
+const addItem = () => {
+  setLocalItems([
+    ...localItems,
+    { text: '', amount: '', status: 'pending' } // ✅ 没有 id
+  ]);
+};
 
   //修改项
   const updateItem = (index, key, value) => {
@@ -52,11 +51,19 @@ function BudgetCard({ title, items, onUpdate, totalAll }) {
     }
     };
 
-  //删除
-  const deleteItem = (index) => {
-    const newItems = localItems.filter((_, i) => i !== index);
-    setLocalItems(newItems);
+  //删除项
+  const deleteItem = async (itemId) => {
+    const { error } = await supabase.from('budgets').delete().eq('id', itemId);
+    if (error) {
+      alert('删除失败：' + error.message);
+    } else {
+      setLocalItems((prev) => prev.filter(item => item.id !== itemId));
+    }
   };
+
+
+
+
   //修改状态
   const toggleStatus = (index) => {
 
@@ -239,7 +246,7 @@ function BudgetCard({ title, items, onUpdate, totalAll }) {
                           transition: 'border-color 0.2s',  }}
                       />
                       <button
-                        onClick={() => deleteItem(i)}
+                        onClick={() => deleteItem(item.id)}
                         style={{
                           border: 'none',
                           background: 'transparent',
