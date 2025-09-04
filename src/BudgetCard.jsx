@@ -17,7 +17,7 @@ function BudgetCard({ title, items, onUpdate, totalAll }) {
     //定义localItems是当前卡片的本地状态副本
   const [localItems, setLocalItems] = useState(items);
 
-   const hasMounted = useRef(false);  // ⬅️ 首次挂载判断
+  const hasMounted = useRef(false);  // ⬅️ 首次挂载判断
   //监听localItems的变化
   useEffect(() => {
     if (hasMounted.current) {
@@ -49,8 +49,6 @@ function BudgetCard({ title, items, onUpdate, totalAll }) {
     }
     };
 
-
-
   //删除
   const deleteItem = (index) => {
     const newItems = localItems.filter((_, i) => i !== index);
@@ -58,10 +56,15 @@ function BudgetCard({ title, items, onUpdate, totalAll }) {
   };
   //修改状态
   const toggleStatus = (index) => {
+
     const newItems = [...localItems];
-    newItems[index].status =
-      newItems[index].status === 'done' ? 'pending' : 'done';
+    //对被点击的那一项，也要深拷贝（创建一个新对象）
+    const target = { ...newItems[index] }; 
+    target.status = target.status === 'done' ? 'pending' : 'done';
+    newItems[index] = target; // 替换为新对象
     setLocalItems(newItems);
+
+
   };
   //拖拽排序处理
   const handleDragEnd = (result) => {
