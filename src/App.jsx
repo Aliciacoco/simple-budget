@@ -2,6 +2,9 @@ import BudgetCard from './BudgetCard';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import _ from 'lodash';
+import { IoAdd } from "react-icons/io5";
+import { IoClose } from "react-icons/io5";
+import { RiDeleteBin6Line } from "react-icons/ri";
 
 function App() {
   const [data, setData] = useState([]);
@@ -147,7 +150,12 @@ function App() {
   };
 
   return (
-    <div style={{ padding: '40px 80px' }}>
+    <div style={{ 
+      width: '100%',
+      padding: '0 16px',
+      boxSizing: 'border-box',
+      marginTop: 32, 
+      }}>
       {data.length === 0 && (
         <div style={{
           textAlign: 'center',
@@ -168,22 +176,41 @@ function App() {
 
         return (
           <div key={`${year}-${month}`} ref={isCurrentMonth ? currentMonthRef : null} style={{ marginBottom: 48 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <h1>{year}年{month}月（总预算 ¥{totalAll}）</h1>
+            {/* 月份标题和删除按钮 */}
+            <div style={{ 
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              marginBottom: 12,
+              }}>
+              <h2
+              style={{
+                margin: 0,
+                fontSize: 18,
+              }}
+              >
+                {year}年{month}月（总预算 ¥{totalAll}）
+                </h2>
               <button
                 onClick={() => deleteMonth(i)}
                 style={{
                   background: 'none',
                   border: 'none',
-                  fontSize: 20,
+                  height: 24,
+                  width: 24,
+                  fontSize: 24,
                   color: '#888',
                   cursor: 'pointer',
+                  padding: 0,
+                  margin:0,
                 }}
                 title="删除该月份"
-              >✖</button>
+              >
+                <RiDeleteBin6Line />
+              </button>
             </div>
 
-            <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
               {cards.map((card, j) => (
                 <BudgetCard
                   key={card.title}
@@ -220,9 +247,12 @@ function App() {
           borderRadius: 10,
           cursor: 'pointer',
           marginTop: 32,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
         }}
       >
-        ➕ 新增月份
+        <IoAdd style={{ width: 20, height: 20, fontSize:20, color: '#fff'}}/> 新增月份
       </button>
     </div>
   );

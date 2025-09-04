@@ -2,6 +2,8 @@
 import { useState, useEffect, useRef } from 'react';
 import isEqual from 'lodash/isEqual';
 
+import { IoClose } from "react-icons/io5";
+
 
 
 //引入实现拖拽排序的库组件
@@ -10,6 +12,7 @@ import {
   Droppable,
   Draggable,
 } from '@hello-pangea/dnd';
+import { reduce } from 'lodash';
 
 //主组件，传入4个参数
 function BudgetCard({ title, items, onUpdate, totalAll }) {
@@ -90,17 +93,61 @@ function BudgetCard({ title, items, onUpdate, totalAll }) {
   );
   const percent = totalAll === 0 ? 0 : Math.round((total / totalAll) * 100);
 
+  //不同类别卡片的背景色
+  const cardColors = {
+  '生活必要': '#F2C94C', // 浅黄
+  '娱乐享受': '#56CCF2', // 浅蓝
+  '教育学习': '#9B51E0', // 紫色
+  '大额支出': '#EB5757', // 红色
+  '赠与':     '#27AE60', // 绿色
+  };
+
+  // 根据 title 获取主题色
+  const cardColor = cardColors[title] || '#999';
+
+  // 生成浅色背景（透明度 0.1）
+  const bgColor = `${cardColor}1A`; // HEX + Alpha (1A ≈ 10%)
+
+
+
   return (
+    //容器样式
     <div
       style={{
-        background: '#fffbe7',
-        padding: 16,
+        background: bgColor,
+        padding: 24,
         borderRadius: 12,
         maxWidth: 500,
         marginBottom: 32,
+        color:cardColors[title] || '#333',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 12,
       }}
     >
-      <h2>{title}</h2>
+      {/* 标题和百分比 */}
+      <div style={{ 
+        borderBottom: '0.5px solid #e5e5e5',
+        paddingBottom: 2, 
+        marginBottom: 2, 
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        height: 50,
+        }}
+        >
+        <h3>{title}</h3>
+        <div
+          style={{
+            fontWeight: 'bold',
+            textAlign: 'right',
+            fontSize: 16,
+          }}
+        >
+          {percent}%
+        </div>
+      </div>
+      
 
       <DragDropContext onDragEnd={handleDragEnd}>
         <Droppable droppableId="droppable-list">
@@ -120,26 +167,29 @@ function BudgetCard({ title, items, onUpdate, totalAll }) {
                         display: 'flex',
                         gap: 8,
                         alignItems: 'center',
-                        marginBottom: 8,
+                        marginBottom: 12,
                         ...provided.draggableProps.style,
                       }}
                     >
-                      {/* 拖动手柄绑定在 status 按钮 */}
+                      {/* status 按钮 */}
                       <span
-                        {...provided.dragHandleProps}
-                        onClick={() => toggleStatus(i)}
-                        style={{
-                          cursor: 'grab',
-                          fontSize: 20,
-                          width: 24,
-                          textAlign: 'center',
-                          userSelect: 'none',
-                          opacity: 0.9,
-                        }}
-                        title="拖动排序"
-                      >
-                        {item.status === 'done' ? '✅' : '⭕'}
-                      </span>
+                      {...provided.dragHandleProps}
+                      onClick={() => toggleStatus(i)}
+                      style={{
+                        cursor: 'grab',
+                        width: 10,
+                        height: 10,
+                        borderRadius: '50%',
+                        border: '1px solid #ddd',
+                        backgroundColor: item.status === 'done' ? cardColors[title] : '#fff', // ✅ 动态主题色
+                        display: 'inline-block',
+                        userSelect: 'none',
+                        opacity: 0.9,
+                        transition: 'background-color 0.2s ease, border-color 0.2s ease',
+                      }}
+                      title="点击切换状态"
+                    />
+
 
                       <input
                         type="text"
@@ -148,17 +198,45 @@ function BudgetCard({ title, items, onUpdate, totalAll }) {
                         onChange={(e) =>
                           updateItem(i, 'text', e.target.value)
                         }
-                        style={{ flex: 1 }}
+                        style={{ 
+                          flex: 1,
+                          padding: '6px 10px',
+                          borderRadius: 6,
+                          border: '1px solid #ccc',
+                          backgroundColor: 'rgba(255, 255, 255)',
+                          fontSize: 14,
+                          color: '#333',
+                          outline: 'none',
+                          transition: 'border-color 0.2s', 
+                        }}
                       />
                       <input
                         type="text"
-                        inputMode="numeric"
+                        step="0.01" // 允许小数，默认两位
+                        inputMode="decimal" // 建议手机键盘带小数点（可选）
                         value={item.amount}
                         placeholder="金额"
-                        onChange={(e) =>
-                          updateItem(i, 'amount', Number(e.target.value))
-                        }
-                        style={{ width: 80 }}
+                        onChange={(e) =>{
+                          let val = e.target.value;
+                          // ✅ 立即过滤掉所有非数字和小数点字符
+                          val = val
+                            .replace(/[^0-9.]/g, '')        // 移除除数字和点之外的字符
+                            .replace(/\.{2,}/g, '.')        // 替换连续点为一个点
+                            .replace(/^0+(\d)/, '$1')       // 去掉前导 0（保留小数点前的数字）
+                            .replace(/^(\d*\.\d*).*$/, '$1'); // 保留一个小数点后的数字
+
+                          updateItem(i, 'amount', val);
+                        }}
+                        style={{ 
+                          width: 70,
+                          padding: '6px 10px',
+                          borderRadius: 6,
+                          border: '1px solid #ccc',
+                          backgroundColor: 'rgba(255, 255, 255)',
+                          fontSize: 14,
+                          color: '#333',
+                          outline: 'none',
+                          transition: 'border-color 0.2s',  }}
                       />
                       <button
                         onClick={() => deleteItem(i)}
@@ -166,12 +244,15 @@ function BudgetCard({ title, items, onUpdate, totalAll }) {
                           border: 'none',
                           background: 'transparent',
                           color: '#888',
+                          height: 20,
+                          width: 20,
                           fontSize: 20,
                           cursor: 'pointer',
+                          padding: 0,
                         }}
                         title="删除"
                       >
-                        ✖
+                      <IoClose />
                       </button>
                     </div>
                   )}
@@ -184,17 +265,7 @@ function BudgetCard({ title, items, onUpdate, totalAll }) {
         </Droppable>
       </DragDropContext>
 
-      {/* 总额与占比 */}
-      <div
-        style={{
-          marginTop: 16,
-          fontWeight: 'bold',
-          textAlign: 'right',
-          fontSize: 16,
-        }}
-      >
-        总计：¥{total}（占比 {percent}%）
-      </div>
+      
 
       {/* 添加按钮 */}
       <div
