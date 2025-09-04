@@ -204,7 +204,7 @@ function App() {
                 <RiDeleteBin6Line />
               </button>
                 </div>
-              <span style={{color:'#888', fontSize: 16,}}>总预算 ¥{totalAll}，已花费 ¥{totalDone}</span>
+              <span style={{color:'#888', fontSize: 16,}}>总预算 ¥{totalAll.toFixed(2)}，已花费 ¥{totalDone.toFixed(2)}</span>
               
             </div>
 
