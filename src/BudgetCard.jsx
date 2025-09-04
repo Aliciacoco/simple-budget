@@ -102,12 +102,23 @@ const addItem = () => {
 
   //不同类别卡片的背景色
   const cardColors = {
-  '生活必要': '#F2C94C', // 浅黄
+  '生活必要': '#ee852f', // 浅黄
   '娱乐享受': '#56CCF2', // 浅蓝
   '教育学习': '#9B51E0', // 紫色
   '大额支出': '#EB5757', // 红色
   '赠与':     '#27AE60', // 绿色
   };
+
+  //不同类别卡片的字体色
+  const fontColors = {
+  '生活必要': '#ee852f', // 浅黄
+  '娱乐享受': '#56CCF2', // 浅蓝
+  '教育学习': '#9B51E0', // 紫色
+  '大额支出': '#EB5757', // 红色
+  '赠与':     '#27AE60', // 绿色
+  };
+
+
 
   // 根据 title 获取主题色
   const cardColor = cardColors[title] || '#999';
@@ -123,7 +134,7 @@ const addItem = () => {
       style={{
         background: bgColor,
         padding: 24,
-        borderRadius: 12,
+        borderRadius: 36,
         maxWidth: 500,
         marginBottom: 32,
         color:cardColors[title] || '#333',
@@ -184,10 +195,10 @@ const addItem = () => {
                       onClick={() => toggleStatus(i)}
                       style={{
                         cursor: 'grab',
-                        width: 10,
-                        height: 10,
-                        borderRadius: '50%',
-                        border: '1px solid #ddd',
+                        width: 18,
+                        height: 18,
+                        borderRadius: '80%',
+                        // border: '1px solid #ddd',
                         backgroundColor: item.status === 'done' ? cardColors[title] : '#fff', // ✅ 动态主题色
                         display: 'inline-block',
                         userSelect: 'none',
@@ -207,9 +218,9 @@ const addItem = () => {
                         }
                         style={{ 
                           flex: 1,
-                          padding: '6px 10px',
-                          borderRadius: 6,
-                          border: '1px solid #ccc',
+                          padding: '8px 10px',
+                          borderRadius: 8,
+                          border: '1px solid rgb(255, 255, 255,0)',
                           backgroundColor: 'rgba(255, 255, 255)',
                           fontSize: 14,
                           color: '#333',
@@ -238,7 +249,7 @@ const addItem = () => {
                           width: 70,
                           padding: '6px 10px',
                           borderRadius: 6,
-                          border: '1px solid #ccc',
+                          border: '1px solid rgb(255, 255, 255,0)',
                           backgroundColor: 'rgba(255, 255, 255)',
                           fontSize: 14,
                           color: '#333',

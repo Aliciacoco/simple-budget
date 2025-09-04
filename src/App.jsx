@@ -62,8 +62,6 @@ function App() {
   }, []);
 
   const saveMonthDataToSupabase = useCallback(_.debounce(async (monthData) => {
-
-
     const { year, month, cards } = monthData;
 
   for (const card of cards) {
@@ -170,27 +168,25 @@ function App() {
       {[...data].sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month).map((monthData, i) => {
         const { year, month, cards } = monthData;
         const totalAll = cards.flatMap(c => c.items).reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+        const totalDone = cards.flatMap(c => c.items)
+        .filter(item => item.status === 'done')
+        .reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
         const now = new Date();
         const isCurrentMonth = year === now.getFullYear() && month === now.getMonth() + 1;
 
         return (
-          <div key={`${year}-${month}`} ref={isCurrentMonth ? currentMonthRef : null} style={{ marginBottom: 48 }}>
+          <div key={`${year}-${month}`} ref={isCurrentMonth ? currentMonthRef : null} style={{}}>
             {/* 月份标题和删除按钮 */}
             <div style={{ 
               display: 'flex',
-              alignItems: 'center',
-              gap: 12,
-              marginBottom: 12,
+              flexDirection: 'column',
+              justifyContent:'center',
+              gap: 16,
+              marginBottom: 24,
               }}>
-              <h2
-              style={{
-                margin: 0,
-                fontSize: 18,
-              }}
-              >
-                {year}年{month}月（总预算 ¥{totalAll}）
-                </h2>
-              <button
+                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center',gap:20,}}>
+                  <h2 style={{margin: 0}}>{year}年{month}月</h2>
+                  <button
                 onClick={() => deleteMonth(i)}
                 style={{
                   background: 'none',
@@ -207,6 +203,9 @@ function App() {
               >
                 <RiDeleteBin6Line />
               </button>
+                </div>
+              <span style={{color:'#888', fontSize: 16,}}>总预算 ¥{totalAll}，已花费 ¥{totalDone}</span>
+              
             </div>
 
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
