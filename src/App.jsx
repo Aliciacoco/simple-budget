@@ -67,6 +67,7 @@ function App() {
   for (const card of cards) {
     for (const item of card.items) {
       const record = {
+        id: item.id,
         year,
         month,
         title: card.title,
@@ -74,17 +75,10 @@ function App() {
         amount: parseFloat(item.amount) || 0,
         status: item.status,
       };
+      //upset是有则更新，无则插入
+      await supabase.from('budgets').upsert([record]);
 
-      if (!item.id) {
-        // 没有 id 就插入
-        const { data, error } = await supabase.from('budgets').insert([record]).select(); // select 返回 id
-        if (!error && data && data[0]) {
-          item.id = data[0].id; // 设置回去，供后续更新用
-        }
-      } else {
-        // 有 id 就更新
-        await supabase.from('budgets').update(record).eq('id', item.id);
-      }
+      
     }
   }
 
@@ -116,7 +110,7 @@ function App() {
     const newCards = fixedOrder.map(title => ({
       title,
       items: [{
-        id: Date.now().toString() + Math.random().toString().slice(2, 6),
+        id: crypto.randomUUID(), 
         text: '',
         amount: '',
         status: 'pending',

@@ -4,8 +4,6 @@ import isEqual from 'lodash/isEqual';
 import { supabase } from '../lib/supabaseClient';
 import { IoClose } from "react-icons/io5";
 
-
-
 //引入实现拖拽排序的库组件
 import {
   DragDropContext,
@@ -13,6 +11,8 @@ import {
   Draggable,
 } from '@hello-pangea/dnd';
 import { reduce } from 'lodash';
+
+
 
 //主组件，传入4个参数
 function BudgetCard({ title, items, onUpdate, totalAll }) {
@@ -35,7 +35,7 @@ function BudgetCard({ title, items, onUpdate, totalAll }) {
 const addItem = () => {
   setLocalItems([
     ...localItems,
-    { text: '', amount: '', status: 'pending' } // ✅ 没有 id
+    { id: crypto.randomUUID(), text: '', amount: '', status: 'pending' } 
   ]);
 };
 
