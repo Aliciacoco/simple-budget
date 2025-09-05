@@ -40,6 +40,7 @@ function App() {
           text: row.text,
           amount: row.amount,
           status: row.status,
+          position: row.position ?? 0, // ✅ 加上 position 字段
         });
       });
 
@@ -208,7 +209,8 @@ function App() {
                 <BudgetCard
                   key={card.title}
                   title={card.title}
-                  items={card.items}
+                  // ✅ 按 position 排序
+                  items={[...card.items].sort((a, b) => (a.position ?? 0) - (b.position ?? 0))}
                   totalAll={totalAll}
                   onUpdate={(updatedItems) => {
                     const oldItems = _.cloneDeep(data[i].cards[j].items);
