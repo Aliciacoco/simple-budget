@@ -33,9 +33,12 @@ function BudgetCard({ title, items, onUpdate, totalAll }) {
 
 // 新增项
 const addItem = () => {
+  const positions = localItems.map(item => item.position ?? 0);
+  const nextPosition = (positions.length ? Math.max(...positions) : -1) + 1;
+
   setLocalItems([
     ...localItems,
-    { id: crypto.randomUUID(), text: '', amount: '', status: 'pending' } 
+    { id: crypto.randomUUID(), text: '', amount: '', status: 'pending', position: nextPosition} 
   ]);
 };
 
@@ -57,7 +60,16 @@ const addItem = () => {
     if (error) {
       alert('删除失败：' + error.message);
     } else {
-      setLocalItems((prev) => prev.filter(item => item.id !== itemId));
+       // 先从本地移除该项
+    const updated = localItems.filter(item => item.id !== itemId);
+
+    // ✅ 重新编号 position
+    const reIndexed = updated.map((item, idx) => ({
+      ...item,
+      position: idx,
+    }));
+
+    setLocalItems(reIndexed); // 会触发保存
     }
   };
 
@@ -88,7 +100,14 @@ const addItem = () => {
     //将刚刚删除的那一项 moved 插入到目标位置
     //把 moved 插入到目标位置，把 moved 插入到目标位置只插入
     newItems.splice(destination.index, 0, moved);
-    setLocalItems(newItems);
+
+    // ✅ 更新每一项的 position 字段
+    const reIndexed = newItems.map((item, idx) => ({
+      ...item,
+      position: idx
+    }));
+
+    setLocalItems(reIndexed);
   };
 
   const total = localItems.reduce(

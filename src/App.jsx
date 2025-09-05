@@ -74,6 +74,7 @@ function App() {
         text: item.text,
         amount: parseFloat(item.amount) || 0,
         status: item.status,
+        position: item.position ?? 0 
       };
       //upset是有则更新，无则插入
       await supabase.from('budgets').upsert([record]);
