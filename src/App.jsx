@@ -2,253 +2,136 @@ import BudgetCard from './BudgetCard';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import _ from 'lodash';
-import { IoAdd } from "react-icons/io5";
-import { IoClose } from "react-icons/io5";
-import { RiDeleteBin6Line } from "react-icons/ri";
+import { formatBudgetData } from './utils/formatBudgetData';
+import { calcBudgetStats } from './utils/calcBudget';
+import { IoIosArrowBack } from "react-icons/io";
+import { IoIosArrowForward } from "react-icons/io";;
+
 
 function App() {
-  const [data, setData] = useState([]);
-  const currentMonthRef = useRef(null);
-
+  
   const fixedOrder = ['生活必要', '娱乐享受', '教育学习', '大额支出', '赠与'];
+  const [monthData, setMonthData] = useState(null); // 当前月的数据
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
 
-  useEffect(() => {
-    if (currentMonthRef.current) {
-      currentMonthRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const handlePrevMonth = () => {
+    let y = currentYear;
+    let m = currentMonth - 1;
+    if (m === 0) {
+      m = 12;
+      y -= 1;
     }
+    loadFromSupabase(y, m);
+  };
 
-    async function loadFromSupabase() {
-      console.log("🚀 正在从 Supabase 读取数据...");
-      const { data: rows, error } = await supabase
-        .from('budgets')
-        .select('*')
-        .order('created_at', { ascending: true });
-
-      if (error) {
-        console.error("❌ 获取失败：", error.message);
-        return;
-      }
-
-      const grouped = {};
-      rows.forEach(row => {
-        const key = `${row.year}-${row.month}`;
-        if (!grouped[key]) grouped[key] = {};
-        if (!grouped[key][row.title]) grouped[key][row.title] = [];
-
-        grouped[key][row.title].push({
-          id: row.id,
-          text: row.text,
-          amount: row.amount,
-          status: row.status,
-          position: row.position ?? 0, // ✅ 加上 position 字段
-        });
-      });
-
-      const finalData = Object.entries(grouped).map(([key, cardsObj]) => {
-        const [year, month] = key.split('-').map(Number);
-
-        // 根据 fixedOrder 补全缺失的卡片类型
-        const cards = fixedOrder.map(title => ({
-          title,
-          items: cardsObj[title] || []
-        }));
-
-        return { year, month, cards };
-      });
-
-      setData(finalData);
+  const handleNextMonth = () => {
+    let y = currentYear;
+    let m = currentMonth + 1;
+    if (m === 13) {
+      m = 1;
+      y += 1;
     }
+    loadFromSupabase(y, m);
+  };
 
-    loadFromSupabase();
-  }, []);
+  const loadFromSupabase = async (y, m) => {
+  console.log(`🚀 正在加载 ${y}年${m}月数据...`);
+  const { data: rows, error } = await supabase
+    .from('budgets')
+    .select('*')
+    .order('created_at', { ascending: true });
 
-  const saveMonthDataToSupabase = useCallback(_.debounce(async (monthData) => {
-    const { year, month, cards } = monthData;
-
-  for (const card of cards) {
-    for (const item of card.items) {
-      const record = {
-        id: item.id,
-        year,
-        month,
-        title: card.title,
-        text: item.text,
-        amount: parseFloat(item.amount) || 0,
-        status: item.status,
-        position: item.position ?? 0 
-      };
-      //upset是有则更新，无则插入
-      await supabase.from('budgets').upsert([record]);
-
-      
-    }
+  if (error) {
+    console.error("❌ 数据获取失败：", error.message);
+    return;
   }
 
-  console.log(`✅ 保存完成`);
+  const finalData = formatBudgetData(rows, fixedOrder, y, m);
+  setMonthData(finalData);
+  setCurrentYear(y);
+  setCurrentMonth(m);
+};
+
+  useEffect(() => {
+  const now = new Date();
+  loadFromSupabase(now.getFullYear(), now.getMonth()+1);
+}, []);
 
 
+  // 保存某个月的预算数据到 Supabase（防抖节流版）
+  const saveMonthDataToSupabase = useCallback(
+    _.debounce(async (monthData) => {
+      const { year, month, cards } = monthData;
 
-  }, 500), []);
+      // 遍历每张卡片
+      for (const card of cards) {
+        // 遍历卡片内的每一项预算条目
+        for (const item of card.items) {
+          // 构造要写入数据库的记录对象
+          const record = {
+            id: item.id,                          // 每项唯一 ID
+            year,                                 // 所属年份
+            month,                                // 所属月份
+            title: card.title,                    // 卡片类型（如 "生活必要"）
+            text: item.text,                      // 预算条目内容
+            amount: parseFloat(item.amount) || 0, // 金额（字符串转数字，默认为 0）
+            status: item.status,                  // 状态（如 "pending" 或 "done"）
+            position: item.position ?? 0          // 排序位置，默认 0
+          };
 
-  const addNextMonth = () => {
-    const newData = [...data];
-    let year, month;
-
-    if (newData.length === 0) {
-      year = 2025;
-      month = 9;
-    } else {
-      const last = newData[newData.length - 1];
-      year = last.year;
-      month = last.month;
-      if (month === 12) {
-        year++;
-        month = 1;
-      } else {
-        month++;
+          // 使用 upsert（有则更新，无则插入）写入数据库
+          await supabase.from('budgets').upsert([record]);
+        }
       }
-    }
 
-    const newCards = fixedOrder.map(title => ({
-      title,
-      items: [{
-        id: crypto.randomUUID(), 
-        text: '',
-        amount: '',
-        status: 'pending',
-      }]
-    }));
+      // 打印保存完成日志
+      console.log(`✅ 保存完成`);
+    }, 500), // 防抖延迟：500ms 内只保存一次
+    []
+  );
 
-    const newMonthData = { year, month, cards: newCards };
-    newData.push(newMonthData);
-    setData(newData);
-    saveMonthDataToSupabase(newMonthData);
-  };
-
-  const deleteMonth = async (index) => {
-    const confirmDelete = window.confirm(`确定要删除 ${data[index].year}年${data[index].month}月 吗？`);
-    if (!confirmDelete) return;
-
-    const { year, month } = data[index];
-    const { error } = await supabase.from('budgets').delete().match({ year, month });
-
-    if (error) {
-      console.error("❌ 删除失败：", error.message);
-      return;
-    }
-
-    const newData = data.filter((_, i) => i !== index);
-    setData(newData);
-    console.log(`✅ 已删除 ${year}年${month}月 的数据`);
-  };
 
   return (
-    <div style={{ 
-      width: '100%',
-      padding: '0 16px',
-      boxSizing: 'border-box',
-      //marginTop: 32, 
-      }}>
-      {data.length === 0 && (
-        <div style={{
-          textAlign: 'center',
-          color: '#999',
-          fontSize: 18,
-          marginTop: 40,
-          fontStyle: 'italic'
-        }}>
-          当前没有任何月份数据，请点击下方“新增月份”开始记录吧！
+    <div style={{ width: '100%', padding: '0px 16px', boxSizing: 'border-box' }}>
+      {monthData && (
+        <div key={`${currentYear}-${currentMonth}`}>
+          <div style={{ position: 'sticky', top: 0, background: 'white', zIndex: 100, borderBottom: '1px solid #eee', paddingBottom: 16 }}>
+            {/* 顶部：切换按钮 + 当前年月 */}
+          <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16}}>
+            <button onClick={handlePrevMonth} style={{width: 30, height: 30, fontSize:30,padding:0,backgroundColor:'white',outline: 'none', boxShadow: 'none', border: 'none',color: '#888'}}><IoIosArrowBack /></button>
+            <h2 style={{ margin: 0 }}>{currentYear}年{currentMonth}月</h2>
+            <button onClick={handleNextMonth} style={{width: 30, height: 30, fontSize:30,padding:0,backgroundColor:'white',outline: 'none', boxShadow: 'none', border: 'none',color: '#888'}}><IoIosArrowForward /></button>
+          </div>
+
+          {/* 月度汇总 */}
+          <span style={{ color: '#888', fontSize: 16 }}>
+            总预算 ¥{calcBudgetStats(monthData.cards).totalAll.toFixed(2)}，
+            已花费 ¥{calcBudgetStats(monthData.cards).totalDone.toFixed(2)}
+          </span>
+          </div>
+          
+
+          {/* 卡片 */}
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 16 }}>
+            {monthData.cards.map((card, j) => (
+              <BudgetCard
+                key={`${card.title}-${currentYear}-${currentMonth}`}
+                title={card.title}
+                items={[...card.items].sort((a, b) => (a.position ?? 0) - (b.position ?? 0))}
+                totalAll={calcBudgetStats(monthData.cards).totalAll}
+                onUpdate={(updatedItems) => {
+                  const newData = _.cloneDeep(monthData);
+                  newData.cards[j].items = updatedItems;
+                  setMonthData(newData);
+                  console.log("📝 触发写入数据库");
+                  saveMonthDataToSupabase(newData);
+                }}
+              />
+            ))}
+          </div>
         </div>
       )}
-
-      {[...data].sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month).map((monthData, i) => {
-        const { year, month, cards } = monthData;
-        const totalAll = cards.flatMap(c => c.items).reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
-        const totalDone = cards.flatMap(c => c.items)
-        .filter(item => item.status === 'done')
-        .reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
-        const now = new Date();
-        const isCurrentMonth = year === now.getFullYear() && month === now.getMonth() + 1;
-
-        return (
-          <div key={`${year}-${month}`} ref={isCurrentMonth ? currentMonthRef : null} style={{}}>
-            {/* 月份标题和删除按钮 */}
-            <div style={{ 
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent:'center',
-              gap: 16,
-              marginBottom: 24,
-              }}>
-                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center',gap:20,}}>
-                  <h2 style={{margin: 0}}>{year}年{month}月</h2>
-                  <button
-                onClick={() => deleteMonth(i)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  height: 24,
-                  width: 24,
-                  fontSize: 24,
-                  color: '#888',
-                  cursor: 'pointer',
-                  padding: 0,
-                  margin:0,
-                }}
-                title="删除该月份"
-              >
-                <RiDeleteBin6Line />
-              </button>
-                </div>
-              <span style={{color:'#888', fontSize: 16,}}>总预算 ¥{totalAll.toFixed(2)}，已花费 ¥{totalDone.toFixed(2)}</span>
-              
-            </div>
-
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              {cards.map((card, j) => (
-                <BudgetCard
-                  key={card.title}
-                  title={card.title}
-                  // ✅ 按 position 排序
-                  items={[...card.items].sort((a, b) => (a.position ?? 0) - (b.position ?? 0))}
-                  totalAll={totalAll}
-                  onUpdate={(updatedItems) => {
-                    const oldItems = _.cloneDeep(data[i].cards[j].items);
-                    if (!_.isEqual(oldItems, updatedItems)) {
-                      const newData = _.cloneDeep(data);
-                      newData[i].cards[j].items = updatedItems;
-                      setData(newData);
-                      console.log("📝 触发写入数据库");
-                      saveMonthDataToSupabase(newData[i]);
-                    } else {
-                      console.log("🚫 没变化，不写入");
-                    }
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-        );
-      })}
-
-      <button
-        onClick={addNextMonth}
-        style={{
-          padding: '10px 24px',
-          fontSize: 16,
-          background: '#222',
-          color: '#fff',
-          border: 'none',
-          borderRadius: 10,
-          cursor: 'pointer',
-          marginTop: 32,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-        }}
-      >
-        <IoAdd style={{ width: 20, height: 20, fontSize:20, color: '#fff'}}/> 新增月份
-      </button>
     </div>
   );
 }
