@@ -1,4 +1,4 @@
-import BudgetCard from './BudgetCard'; 
+import BudgetCard from './components/BudgetCard'; 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import _ from 'lodash';
@@ -8,12 +8,14 @@ import { IoIosArrowBack } from "react-icons/io";
 import { IoIosArrowForward } from "react-icons/io";;
 
 
+
 function App() {
   
   const fixedOrder = ['生活必要', '娱乐享受', '教育学习', '大额支出', '赠与'];
   const [monthData, setMonthData] = useState(null); // 当前月的数据
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
+  
 
   const handlePrevMonth = () => {
     let y = currentYear;
@@ -77,7 +79,8 @@ function App() {
             text: item.text,                      // 预算条目内容
             amount: parseFloat(item.amount) || 0, // 金额（字符串转数字，默认为 0）
             status: item.status,                  // 状态（如 "pending" 或 "done"）
-            position: item.position ?? 0          // 排序位置，默认 0
+            position: item.position ?? 0,          // 排序位置，默认 0
+            iconCategory: item.iconCategory,
           };
 
           // 使用 upsert（有则更新，无则插入）写入数据库
@@ -91,26 +94,73 @@ function App() {
     []
   );
 
-
+  const totalDone = monthData ? calcBudgetStats(monthData.cards).totalDone : 0;
+  
   return (
-    <div style={{ width: '100%', padding: '0px 16px', boxSizing: 'border-box' }}>
+    <div style={{ width: '100%', padding: '0px 16px', boxSizing: 'border-box', }}>
       {monthData && (
         <div key={`${currentYear}-${currentMonth}`}>
-          <div style={{ position: 'sticky', top: 0, background: 'white', zIndex: 100, borderBottom: '1px solid #eee', paddingBottom: 16 }}>
-            {/* 顶部：切换按钮 + 当前年月 */}
+          {/* 顶部固定内容 */}
+          <div style={{ position: 'sticky', top: 0, background: 'white', zIndex: 100}}>
+            {/* 切换按钮 + 当前年月 */}
           <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16}}>
-            <button onClick={handlePrevMonth} style={{width: 30, height: 30, fontSize:30,padding:0,backgroundColor:'white',outline: 'none', boxShadow: 'none', border: 'none',color: '#888'}}><IoIosArrowBack /></button>
+            <button onClick={handlePrevMonth} style={{width: 30, height: 30, fontSize:30,padding:0,backgroundColor:'white',outline: 'none', boxShadow: 'none', border: 'none',color: '#999'}}><IoIosArrowBack /></button>
             <h2 style={{ margin: 0 }}>{currentYear}年{currentMonth}月</h2>
-            <button onClick={handleNextMonth} style={{width: 30, height: 30, fontSize:30,padding:0,backgroundColor:'white',outline: 'none', boxShadow: 'none', border: 'none',color: '#888'}}><IoIosArrowForward /></button>
+            <button onClick={handleNextMonth} style={{width: 30, height: 30, fontSize:30,padding:0,backgroundColor:'white',outline: 'none', boxShadow: 'none', border: 'none',color: '#999'}}><IoIosArrowForward /></button>
           </div>
 
           {/* 月度汇总 */}
           <span style={{ color: '#888', fontSize: 16 }}>
-            总预算 ¥{calcBudgetStats(monthData.cards).totalAll.toFixed(2)}，
             已花费 ¥{calcBudgetStats(monthData.cards).totalDone.toFixed(2)}
           </span>
+
+          {/* 卡片预算占比条 */}
+          <div style={{ margin: '8px 0' }}>
+            {totalDone === 0 ? (
+              // 🟠 没数据时显示灰色分割线
+              <div style={{
+                height: 1,
+                backgroundColor: '#eee',
+                borderRadius: 1,
+                width: '100%',
+              }} />
+            ) : (
+              // 🟢 有数据时显示占比条
+              <div style={{
+                display: 'flex',
+                height: 4,
+                borderRadius: 2,
+                overflow: 'hidden',
+                
+              }}>
+                {monthData.cards.map(card => {
+                  const total = card.items.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+                  const percent = (total / totalDone) * 100;
+                  const cardColors = {
+                    '生活必要': '#ee852f',
+                    '娱乐享受': '#56CCF2',
+                    '教育学习': '#9B51E0',
+                    '大额支出': '#EB5757',
+                    '赠与': '#27AE60',
+                  };
+                  const color = cardColors[card.title] || '#ccc';
+                  return (
+                    <div
+                      key={card.title}
+                      style={{
+                        width: `${percent}%`,
+                        backgroundColor: color,
+                      }}
+                    />
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
           </div>
           
+
 
           {/* 卡片 */}
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 16 }}>
@@ -120,12 +170,17 @@ function App() {
                 title={card.title}
                 items={[...card.items].sort((a, b) => (a.position ?? 0) - (b.position ?? 0))}
                 totalAll={calcBudgetStats(monthData.cards).totalAll}
-                onUpdate={(updatedItems) => {
+                
+                onUpdate={(updatedItems, options ) => {
                   const newData = _.cloneDeep(monthData);
                   newData.cards[j].items = updatedItems;
-                  setMonthData(newData);
+                  
                   console.log("📝 触发写入数据库");
-                  saveMonthDataToSupabase(newData);
+                  setMonthData(newData); // ✅ 始终更新 monthData，保持页面一致
+
+                  if (!options.skipSave) {
+                    saveMonthDataToSupabase(newData); // 🟡 有些更新不写数据库
+                  }
                 }}
               />
             ))}

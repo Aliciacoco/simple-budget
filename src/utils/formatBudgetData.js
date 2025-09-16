@@ -12,6 +12,7 @@ export function formatBudgetData(rows, fixedOrder, year, month) {
       amount: row.amount,
       status: row.status,
       position: row.position ?? 0,
+      iconCategory: row.iconCategory,
     });
   }
 
