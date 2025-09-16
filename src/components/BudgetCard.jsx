@@ -118,10 +118,13 @@ function BudgetCard({ title, items, onUpdate, totalAll }) {
     <div
       style={{
         background: bgColor,
-        padding: 24,
+        paddingTop: 24,
+        paddingRight: 24,
+        paddingBottom: 4,
+        paddingLeft: 24,
         borderRadius: 36,
         maxWidth: 500,
-        marginBottom: 32,
+        marginBottom: 16,
         color: cardColor,
         display: 'flex',
         flexDirection: 'column',
@@ -236,10 +239,9 @@ function BudgetCard({ title, items, onUpdate, totalAll }) {
             color: '#999',
             cursor: 'pointer',
             fontSize: 20,
-            padding: 0,
+            padding: 10,
             outline: 'none',
             border:'none',
-            
           }}
         >
           {expanded ? <IoIosArrowUp /> : <IoIosArrowDown />}

@@ -5,7 +5,10 @@ import _ from 'lodash';
 import { formatBudgetData } from './utils/formatBudgetData';
 import { calcBudgetStats } from './utils/calcBudget';
 import { IoIosArrowBack } from "react-icons/io";
-import { IoIosArrowForward } from "react-icons/io";;
+import { IoIosArrowForward } from "react-icons/io";
+import { analyzeSpendingByAI } from './api/analyzeByAI';
+
+
 
 
 
@@ -15,6 +18,9 @@ function App() {
   const [monthData, setMonthData] = useState(null); // 当前月的数据
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
+  const [analysisResult, setAnalysisResult] = useState('');
+  const [loadingAnalysis, setLoadingAnalysis] = useState(false);
+
   
 
   const handlePrevMonth = () => {
@@ -107,7 +113,9 @@ function App() {
             <button onClick={handlePrevMonth} style={{width: 30, height: 30, fontSize:30,padding:0,backgroundColor:'white',outline: 'none', boxShadow: 'none', border: 'none',color: '#999'}}><IoIosArrowBack /></button>
             <h2 style={{ margin: 0 }}>{currentYear}年{currentMonth}月</h2>
             <button onClick={handleNextMonth} style={{width: 30, height: 30, fontSize:30,padding:0,backgroundColor:'white',outline: 'none', boxShadow: 'none', border: 'none',color: '#999'}}><IoIosArrowForward /></button>
+  
           </div>
+
 
           {/* 月度汇总 */}
           <span style={{ color: '#888', fontSize: 16 }}>
@@ -161,7 +169,6 @@ function App() {
           </div>
           
 
-
           {/* 卡片 */}
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 16 }}>
             {monthData.cards.map((card, j) => (
@@ -185,6 +192,49 @@ function App() {
               />
             ))}
           </div>
+
+          <button
+            onClick={async () => {
+              setLoadingAnalysis(true);// 设置加载状态为 true，表示开始分析
+              try {
+                const allItems = monthData.cards.flatMap(card => card.items.map(item => ({
+                  text: item.text,
+                  amount: item.amount,
+                  iconCategory: item.iconCategory || '其他'
+                })));
+                //设置加载状态为 true，表示开始分析
+                const result = await analyzeSpendingByAI(allItems);
+                setAnalysisResult(result);
+              } catch (err) {
+                console.error("分析失败：", err);
+                setAnalysisResult('分析失败，请稍后重试。');
+              }
+              // 分析结束，关闭 loading 状态
+              setLoadingAnalysis(false);
+            }}
+            style={{ marginTop: 16, padding: '8px 16px', borderRadius: 8, fontSize: 14,color:"#666" , outline:"none",border:"none",}}
+          >
+            {loadingAnalysis ? '分析中...' : 'AI 分析这个月的消费习惯'}
+          </button>
+
+          {/* 如果分析结果不为空，展示下面内容 */}
+          {analysisResult && (
+            <div
+              style={{
+                whiteSpace: 'pre-line',
+                marginTop: 16,
+                background: '#f9f9f9',
+                padding: 16,
+                borderRadius: 12,
+                border: '1px solid #ddd',
+                fontSize: 14
+              }}
+            >
+              {analysisResult}
+            </div>
+          )}
+
+          
         </div>
       )}
     </div>
