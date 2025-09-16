@@ -25,7 +25,7 @@ ${JSON.stringify(monthItems, null, 2)}
 请用中文输出以上分析。
 `;
 
-  const res = await fetch('https://api.moonshot.cn/v1/chat/completions', {
+  const res = await fetch('/api/analyze-by-ai', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
