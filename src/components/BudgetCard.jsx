@@ -4,13 +4,10 @@ import isEqual from 'lodash/isEqual';
 import { supabase } from '../../lib/supabaseClient';
 import { IoClose } from "react-icons/io5";
 import { IoIosAdd } from "react-icons/io";
-import { IoIosArrowDown } from "react-icons/io";
-import { IoIosArrowUp } from "react-icons/io";
-import { GrView } from "react-icons/gr";
-import { BiShow } from "react-icons/bi";
 import AddItemModal from './AddItemModal'; // 新增弹窗组件
 import ViewItemsModal from './ViewItemsModal'; // 显示弹窗组件
 import { getCategoryFromText } from '../api/getCategoryFromText';// 导入分类函数
+import loadingGif from '../../public/images/loading.gif'
 
 // 主组件 BudgetCard，接收 props：title、items、onUpdate、totalAll
 function BudgetCard({ title, items, onUpdate, totalAll }) {
@@ -19,6 +16,7 @@ function BudgetCard({ title, items, onUpdate, totalAll }) {
   const [localItems, setLocalItems] = useState(items);       // 本地状态副本
   const [expanded, setExpanded] = useState(false); // 新增展开状态
   const skipOnUpdate = useRef(false);//创建一个“跳过标志”
+  const [notification, setNotification] = useState(null);  // 新增提示框状态
 
   // 初始化时设置本地项（只运行一次）
   useEffect(() => {
@@ -43,10 +41,30 @@ function BudgetCard({ title, items, onUpdate, totalAll }) {
 
   // 添加新项
   const handleAddItem = async(newItem) => {
+    // 设置提示框信息
+    setNotification({
+      icon: loadingGif, 
+      text: newItem.text,
+      amount: newItem.amount,
+    });
+
     const category = await getCategoryFromText(newItem.text);
     //增加一个 AI 自动分析得到的字段 iconCategory
     const updatedItem = { ...newItem, iconCategory: category };
     setLocalItems(prev => [...prev, updatedItem]);
+  
+    // 更新图标
+    setNotification((prev) => ({
+      ...prev,
+      icon: category ? iconMap[category] : '📦', // 根据分类设置图标
+      
+    }));
+    console.log("Icon:", iconMap[category]); // 调试，确保图标正确
+
+    // 3秒后清除提示框
+    setTimeout(() => {
+      setNotification(null);
+    }, 3000);
   };
 
   // 修改某项的字段
@@ -154,6 +172,33 @@ function BudgetCard({ title, items, onUpdate, totalAll }) {
           ¥{total.toFixed(2)}
         </div>
 
+        {/* 新增成功提示 */}
+        {notification && (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              padding: '4px 8px',
+              backgroundColor: '#f5f5f5',
+              borderRadius: 12,
+              marginLeft: 20,
+              color: '#333',
+              fontSize: 14,
+            }}
+          >
+            {/* 判断是否为图片路径，若是图片路径则使用 <img />，否则使用 <span /> */}
+            <span style={{ fontSize: 18, marginRight: 8 }}>
+              {typeof notification.icon === 'string' && notification.icon.endsWith('.gif') ? (
+                <img src={notification.icon} alt="icon" style={{ width: 18, height: 18 }} />
+              ) : (
+                notification.icon || '📦' // 如果是字符，直接用 span 渲染
+              )}
+            </span>
+
+            <span>{notification.text} ¥{notification.amount}</span>
+          </div>
+        )}
+
       </div>
       
 
@@ -231,6 +276,7 @@ function BudgetCard({ title, items, onUpdate, totalAll }) {
               fontSize: 20,
               cursor: 'pointer',
               padding: 0,
+              outline:'none'
             }}
             title="删除"
           >
