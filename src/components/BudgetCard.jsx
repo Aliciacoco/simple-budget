@@ -137,7 +137,10 @@ function BudgetCard({ title, items, onUpdate, totalAll }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center',color:"#999"}}>
         <span>{title}（{percent}%）</span>
           <div
-            onClick={() => setShowModal(true)}
+            onClick={(e) => {
+              e.stopPropagation(); // 阻止事件冒泡，避免触发卡片的 onClick 事件
+              setShowModal(true); // 显示新增项弹窗
+            }}
             style={{ width: 28, height: 28, fontSize: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >
             <IoIosAdd />

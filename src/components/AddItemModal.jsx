@@ -1,6 +1,8 @@
 //引入 React 以及 useState 钩子
-import React, { useState } from 'react';
 import { FaCheck } from "react-icons/fa6";
+import React, { useState, useEffect } from 'react';  // 确保这里导入了 useEffect
+
+
 
 //onClose()：关闭弹窗
 //onSubmit(item)：提交表单数据（新增一条预算条目）
@@ -27,6 +29,15 @@ function AddItemModal({ onClose, onSubmit }) {
         onClose(); //提交后关闭弹窗
     }
 
+    useEffect(() => {
+      // 打开弹窗时禁用背景滚动
+      document.body.style.overflow = 'hidden';
+
+      // 关闭弹窗时恢复背景滚动
+      return () => {
+        document.body.style.overflow = 'auto';
+      };
+    }, []); // 只在组件挂载和卸载时执行
 
     return ( 
   // 外层遮罩层
@@ -38,7 +49,10 @@ function AddItemModal({ onClose, onSubmit }) {
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 100
-  }} onClick={onClose}>
+  }} onClick={(e) => {
+        e.stopPropagation();  // 阻止事件冒泡，防止触发父组件的 onClick
+        onClose(); // 点击蒙层时关闭弹窗
+      }}>
     
     {/* 内层弹窗容器 */}
     <div style={{

@@ -1,5 +1,5 @@
 // ViewItemsModal.jsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';  // 确保这里导入了 useEffect
 import { IoClose } from "react-icons/io5";
 
 function ViewItemsModal({ onClose, items, updateItem, deleteItem, iconMap, title, total }) {
@@ -9,6 +9,16 @@ function ViewItemsModal({ onClose, items, updateItem, deleteItem, iconMap, title
     e.stopPropagation();
     onClose();  // 关闭弹窗
   };
+
+  useEffect(() => {
+    // 打开弹窗时禁用背景滚动
+    document.body.style.overflow = 'hidden';
+
+    // 关闭弹窗时恢复背景滚动
+    return () => {
+        document.body.style.overflow = 'auto';
+    };
+    }, []); // 只在组件挂载和卸载时执行
 
   return (
     <div
@@ -22,7 +32,8 @@ function ViewItemsModal({ onClose, items, updateItem, deleteItem, iconMap, title
     >
       <div
         style={{
-          border: "1px solid #e5e5e5", background: 'white', borderRadius: '36px', padding: '20px', maxWidth: '500px', width: '80%',
+          border: "1px solid #e5e5e5", background: 'white', borderRadius: '36px', padding: '20px', maxWidth: '500px', width: '80%',maxHeight: '60vh',  
+          overflowY: 'auto',  // 启用垂直滚动条
         }}
         onClick={(e) => e.stopPropagation()}  // 阻止点击弹窗内部关闭蒙层
       >
