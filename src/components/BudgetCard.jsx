@@ -6,12 +6,16 @@ import { IoClose } from "react-icons/io5";
 import { IoIosAdd } from "react-icons/io";
 import { IoIosArrowDown } from "react-icons/io";
 import { IoIosArrowUp } from "react-icons/io";
-import AddItemModal from './AddItemModal'; // 弹窗组件
+import { GrView } from "react-icons/gr";
+import { BiShow } from "react-icons/bi";
+import AddItemModal from './AddItemModal'; // 新增弹窗组件
+import ViewItemsModal from './ViewItemsModal'; // 显示弹窗组件
 import { getCategoryFromText } from '../api/getCategoryFromText';// 导入分类函数
 
 // 主组件 BudgetCard，接收 props：title、items、onUpdate、totalAll
 function BudgetCard({ title, items, onUpdate, totalAll }) {
-  const [showModal, setShowModal] = useState(false);         // 控制弹窗显示隐藏
+  const [showModal, setShowModal] = useState(false);         // 控制新增弹窗显示隐藏
+  const [showViewItemsModal, setShowViewItemsModal] = useState(false);         // 控制查看弹窗显示隐藏
   const [localItems, setLocalItems] = useState(items);       // 本地状态副本
   const [expanded, setExpanded] = useState(false); // 新增展开状态
   const skipOnUpdate = useRef(false);//创建一个“跳过标志”
@@ -91,7 +95,7 @@ function BudgetCard({ title, items, onUpdate, totalAll }) {
   
 
   const cardColor = cardColors[title] || '#999';
-  const bgColor = `${cardColor}1A`; // 添加透明度，作为背景
+  const bgColor = `#fff`; // 添加透明度，作为背景
 
   const iconMap = {
   '服装': '👗',
@@ -115,25 +119,23 @@ function BudgetCard({ title, items, onUpdate, totalAll }) {
   };
 
   return (
-    <div
+    <div onClick={() => setShowViewItemsModal(true)} 
       style={{
         background: bgColor,
-        paddingTop: 24,
-        paddingRight: 24,
-        paddingBottom: 4,
-        paddingLeft: 24,
+        padding: 20,
         borderRadius: 36,
         maxWidth: 500,
-        marginBottom: 16,
+        marginBottom: 8,
         color: cardColor,
         display: 'flex',
         flexDirection: 'column',
         gap: 12,
+        border: "1px solid #e5e5e5"
       }}
     >
       {/* 卡片顶部：标题 + 添加按钮 */}
-      <div style={{ borderBottom: '0.5px solid #e5e5e5', display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: 50 }}>
-        <h3>{title}</h3>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center',color:"#999"}}>
+        <span>{title}（{percent}%）</span>
           <div
             onClick={() => setShowModal(true)}
             style={{ width: 28, height: 28, fontSize: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -143,9 +145,14 @@ function BudgetCard({ title, items, onUpdate, totalAll }) {
       </div>
 
       {/* 显示项目总览摘要 */}
-      <div style={{ fontSize: 14, color: '#555', marginTop: 8 }}>
-        共 {localItems.length} 项，合计 ¥{total.toFixed(2)}
+      <div style={{display: 'flex',alignItems: 'center',}}>
+        <div 
+        style={{ fontSize: 24, fontWeight:'600',color: '#555', color: cardColor}}>
+          ¥{total.toFixed(2)}
+        </div>
+
       </div>
+      
 
       {/* 项目列表 */}
       {expanded && localItems.map((item, i) => (
@@ -158,7 +165,7 @@ function BudgetCard({ title, items, onUpdate, totalAll }) {
             marginBottom: 12,
           }}
         >
-          {/* 状态按钮 */}
+          {/* 分类图标 */}
           <span style={{ fontSize: 18 }}>
             {iconMap[item.iconCategory] || '📦'}
           </span>
@@ -229,29 +236,26 @@ function BudgetCard({ title, items, onUpdate, totalAll }) {
         </div>
       ))}
 
-      {/* 添加展开/收起按钮 */}
-      <div style={{ marginTop: 4, display: 'flex',justifyContent: 'center', }}>
-        <button
-          onClick={() => setExpanded(!expanded)}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: '#999',
-            cursor: 'pointer',
-            fontSize: 20,
-            padding: 10,
-            outline: 'none',
-            border:'none',
-          }}
-        >
-          {expanded ? <IoIosArrowUp /> : <IoIosArrowDown />}
-        </button>
-      </div>
+      {/* 显示弹窗区域 */}
+      {showViewItemsModal && (
+        <ViewItemsModal
+          onClose={() => setShowViewItemsModal(false)} // 关闭弹窗
+          items={localItems} // 传递当前卡片的所有 items
+          updateItem={updateItem} // 传递修改项的函数
+          deleteItem={deleteItem} // 传递删除项的函数
+          iconMap={iconMap} // 传递分类图标
+          title={title} // 传递卡片的 title
+          total={total} // 传递计算的总金额
+        />
+      )}
 
 
 
 
-      {/* 弹窗区域 */}
+
+
+
+      {/* 新增弹窗区域 */}
       {showModal && (
         <AddItemModal
           onClose={() => setShowModal(false)}

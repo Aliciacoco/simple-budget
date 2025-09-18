@@ -106,24 +106,24 @@ function App() {
     <div style={{ width: '100%', padding: '0px 16px', boxSizing: 'border-box', }}>
       {monthData && (
         <div key={`${currentYear}-${currentMonth}`}>
-          {/* 顶部固定内容 */}
-          <div style={{ position: 'sticky', top: 0, background: 'white', zIndex: 100}}>
-            {/* 切换按钮 + 当前年月 */}
-          <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16}}>
+          {/* 1. 顶部固定内容 */}
+          <div style={{ position: 'sticky', top: 0, background: 'white', zIndex: 100,display: 'flex',flexDirection: 'column',alignItems: 'center', justifyContent: 'center', width: '100%',gap:'12px'}}>
+          
+          {/* 1.1 切换按钮 + 月份 */}
+          <div style={{ width:'100%',display: 'flex', flexDirection: 'row', alignItems: 'center',justifyContent:'space-between'}}>
+            {/* 左侧切换按钮 */}
             <button onClick={handlePrevMonth} style={{width: 30, height: 30, fontSize:30,padding:0,backgroundColor:'white',outline: 'none', boxShadow: 'none', border: 'none',color: '#999'}}><IoIosArrowBack /></button>
-            <h2 style={{ margin: 0 }}>{currentYear}年{currentMonth}月</h2>
+            {/* 中间部分 */}
+            <div style={{display: 'flex',flexDirection: 'column',justifyContent:'center',alignItems:'center'}}>
+              <span style={{ margin: 0 }}>{currentYear}年{currentMonth}月</span>
+              <span style={{ fontSize: 24,fontWeight:600, }}>¥{calcBudgetStats(monthData.cards).totalDone.toFixed(2)}</span>
+            </div>
+            {/* 右侧切换按钮 */}
             <button onClick={handleNextMonth} style={{width: 30, height: 30, fontSize:30,padding:0,backgroundColor:'white',outline: 'none', boxShadow: 'none', border: 'none',color: '#999'}}><IoIosArrowForward /></button>
-  
           </div>
 
-
-          {/* 月度汇总 */}
-          <span style={{ color: '#888', fontSize: 16 }}>
-            已花费 ¥{calcBudgetStats(monthData.cards).totalDone.toFixed(2)}
-          </span>
-
-          {/* 卡片预算占比条 */}
-          <div style={{ margin: '8px 0' }}>
+          {/* 1.2 卡片预算占比条 */}
+          <div style={{ width: '100%', }}>
             {totalDone === 0 ? (
               // 🟠 没数据时显示灰色分割线
               <div style={{
@@ -170,13 +170,13 @@ function App() {
           
 
           {/* 卡片 */}
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 16 }}>
+          <div style={{ display: 'flex', gap: 10, flexDirection:'column', marginTop: 16 }}>
             {monthData.cards.map((card, j) => (
               <BudgetCard
                 key={`${card.title}-${currentYear}-${currentMonth}`}
                 title={card.title}
                 items={[...card.items].sort((a, b) => (a.position ?? 0) - (b.position ?? 0))}
-                totalAll={calcBudgetStats(monthData.cards).totalAll}
+                totalAll={totalDone}
                 
                 onUpdate={(updatedItems, options ) => {
                   const newData = _.cloneDeep(monthData);
