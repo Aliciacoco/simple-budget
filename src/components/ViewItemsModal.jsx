@@ -32,18 +32,20 @@ function ViewItemsModal({ onClose, items, updateItem, deleteItem, iconMap, title
     >
       <div
         style={{
-          border: "1px solid #e5e5e5", background: 'white', borderRadius: '36px', padding: '20px', maxWidth: '500px', width: '80%',maxHeight: '60vh',  
+          border: "1px solid #e5e5e5", background: 'white', borderRadius: '24px', maxWidth: '500px', width: '92%',maxHeight: '70vh',  
           overflowY: 'auto',  // 启用垂直滚动条
         }}
         onClick={(e) => e.stopPropagation()}  // 阻止点击弹窗内部关闭蒙层
       >
-
-        <span style={{color:"#999"}}>{title}</span>
-        <div style={{ marginBottom: '20px',fontWeight:'600'}}>
-          ¥{total.toFixed(2)} {/* 显示总金额 */}
+        <div style={{position:'sticky',top: 0, background: 'white', zIndex: 100, padding:18, borderBottom:'1px solid #e5e5e5'}}>
+          <span style={{color:"#999"}}>{title}</span>
+          <div style={{ fontWeight:'600'}}>
+            ¥{total.toFixed(2)} {/* 显示总金额 */}
         </div>
+        </div>
+        
 
-        <div style={{ marginTop: '20px' }}>
+        <div style={{ padding:16}}>
           {/* 项目列表 */}
           {items.map((item, index) => (
             <div
@@ -78,7 +80,6 @@ function ViewItemsModal({ onClose, items, updateItem, deleteItem, iconMap, title
                   color: '#333',
                   border: "1px solid #e5e5e5",
                   boxSizing:'border-box',
-                  
                 }}
               />
 

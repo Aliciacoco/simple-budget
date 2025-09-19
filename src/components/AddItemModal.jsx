@@ -1,6 +1,6 @@
 //引入 React 以及 useState 钩子
 import { FaCheck } from "react-icons/fa6";
-import React, { useState, useEffect } from 'react';  // 确保这里导入了 useEffect
+import React, { useState, useEffect, useRef } from 'react';  // 确保这里导入了 useEffect
 
 
 
@@ -10,6 +10,16 @@ function AddItemModal({ onClose, onSubmit }) {
     //定义两个输入框的状态
     const [text, setText] = useState('');
     const [amount, setAmount] = useState('');
+
+     // 使用 useRef 获取输入框引用
+    const amountInputRef = useRef(null);
+
+    // 点击按钮时自动聚焦输入框
+    useEffect(() => {
+      if (amountInputRef.current) {
+        amountInputRef.current.focus(); // 聚焦金额输入框
+      }
+    }, []); // 只在弹窗打开时执行一次
     
     //提交处理逻辑
     const handleSubmit = () => {
@@ -81,6 +91,8 @@ function AddItemModal({ onClose, onSubmit }) {
         <button
           onClick={handleSubmit}
           style={{
+            width:30,
+            padding:0,
             color: '#00B158',
             background: 'none',
             border: 'none',
@@ -105,18 +117,20 @@ function AddItemModal({ onClose, onSubmit }) {
         style={{
           width: '100%',
           padding: '10px 12px',
-          marginBottom: 12,
+          marginBottom: 20,
           borderRadius: 8,
           border: '1px solid #ddd',
           fontSize: 16,
           outline: 'none',
-          boxSizing: 'border-box'
+          boxSizing: 'border-box',
+          height:40,
         }}
       />
 
       {/* 输入金额 */}
       <input
         placeholder="金额"
+        inputMode="decimal"
         type="number"
         value={amount}
         onChange={(e) => setAmount(e.target.value)}
@@ -128,7 +142,8 @@ function AddItemModal({ onClose, onSubmit }) {
           border: '1px solid #ddd',
           fontSize: 16,
           outline: 'none',
-          boxSizing: 'border-box'
+          boxSizing: 'border-box',
+          height:40,
         }}
       />
     </div>
