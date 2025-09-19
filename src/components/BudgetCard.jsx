@@ -18,6 +18,8 @@ function BudgetCard({ title, items, onUpdate, totalAll }) {
   const skipOnUpdate = useRef(false);//创建一个“跳过标志”
   const [notification, setNotification] = useState(null);  // 新增提示框状态
 
+
+
   // 初始化时设置本地项（只运行一次）
   useEffect(() => {
     setLocalItems(items);
@@ -139,18 +141,20 @@ function BudgetCard({ title, items, onUpdate, totalAll }) {
   return (
     <div onClick={() => setShowViewItemsModal(true)} 
       style={{
-        background: bgColor,
         padding: 20,
         borderRadius: 36,
-        maxWidth: 500,
+        maxWidth: 360,
         marginBottom: 8,
         color: cardColor,
         display: 'flex',
         flexDirection: 'column',
         gap: 12,
-        border: "1px solid #e5e5e5"
+        border: "1px solid #e5e5e5",
+        width:'100%',
       }}
     >
+
+
       {/* 卡片顶部：标题 + 添加按钮 */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center',color:"#999"}}>
         <span>{title}（{percent}%）</span>
@@ -202,88 +206,7 @@ function BudgetCard({ title, items, onUpdate, totalAll }) {
       </div>
       
 
-      {/* 项目列表 */}
-      {expanded && localItems.map((item, i) => (
-        <div
-          key={String(item.id ?? i)}
-          style={{
-            display: 'flex',
-            gap: 8,
-            alignItems: 'center',
-            marginBottom: 12,
-          }}
-        >
-          {/* 分类图标 */}
-          <span style={{ fontSize: 18 }}>
-            {iconMap[item.iconCategory] || '📦'}
-          </span>
-
-          {/* 名称输入框 */}
-          <input
-            type="text"
-            value={item.text}
-            placeholder="事项"
-            onChange={(e) => updateItem(i, 'text', e.target.value)}
-            style={{
-              flex: 1,
-              padding: '8px 10px',
-              borderRadius: 8,
-              border: '1px solid transparent',
-              backgroundColor: '#fff',
-              fontSize: 16,
-              color: '#333',
-              outline: 'none',
-            }}
-          />
-
-          {/* 金额输入框 */}
-          <input
-            type="text"
-            step="0.01"
-            inputMode="decimal"
-            value={item.amount}
-            placeholder="金额"
-            onChange={(e) => {
-              let val = e.target.value;
-              val = val
-                .replace(/[^0-9.]/g, '')
-                .replace(/\.{2,}/g, '.')
-                .replace(/^0+(\d)/, '$1')
-                .replace(/^(\d*\.\d*).*$/, '$1');
-              updateItem(i, 'amount', val);
-            }}
-            style={{
-              width: 70,
-              padding: '6px 10px',
-              borderRadius: 6,
-              border: '1px solid transparent',
-              backgroundColor: '#fff',
-              fontSize: 16,
-              color: '#333',
-              outline: 'none',
-            }}
-          />
-
-          {/* 删除按钮 */}
-          <button
-            onClick={() => deleteItem(item.id)}
-            style={{
-              border: 'none',
-              background: 'transparent',
-              color: '#888',
-              height: 20,
-              width: 20,
-              fontSize: 20,
-              cursor: 'pointer',
-              padding: 0,
-              outline:'none'
-            }}
-            title="删除"
-          >
-            <IoClose />
-          </button>
-        </div>
-      ))}
+      
 
       {/* 显示弹窗区域 */}
       {showViewItemsModal && (

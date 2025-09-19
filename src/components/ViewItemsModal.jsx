@@ -26,17 +26,18 @@ function ViewItemsModal({ onClose, items, updateItem, deleteItem, iconMap, title
         position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
         background: 'rgba(0, 0, 0, 0.5)',  // 蒙层背景
         display: 'flex', justifyContent: 'center', alignItems: 'center',
-        zIndex: 1000
+        zIndex: 1000,
       }}
       onClick={handleOverlayClick}  // 点击蒙层关闭弹窗
     >
       <div
         style={{
-          border: "1px solid #e5e5e5", background: 'white', borderRadius: '24px', maxWidth: '500px', width: '92%',maxHeight: '70vh',  
-          overflowY: 'auto',  // 启用垂直滚动条
+          border: "1px solid #e5e5e5", background: 'white', borderRadius: '24px', maxWidth: '500px', width: '92%',maxHeight: '70vh',  overflow:'hidden'
+          
         }}
         onClick={(e) => e.stopPropagation()}  // 阻止点击弹窗内部关闭蒙层
       >
+        {/* 顶部固定部分 */}
         <div style={{position:'sticky',top: 0, background: 'white', zIndex: 100, padding:18, borderBottom:'1px solid #e5e5e5'}}>
           <span style={{color:"#999"}}>{title}</span>
           <div style={{ fontWeight:'600'}}>
@@ -45,7 +46,7 @@ function ViewItemsModal({ onClose, items, updateItem, deleteItem, iconMap, title
         </div>
         
 
-        <div style={{ padding:16}}>
+        <div style={{ padding:16,overflowY: 'scroll',maxHeight: '70vh',}}>
           {/* 项目列表 */}
           {items.map((item, index) => (
             <div
@@ -57,6 +58,8 @@ function ViewItemsModal({ onClose, items, updateItem, deleteItem, iconMap, title
                 marginBottom: 12,
                 boxSizing:'border-box',
                 width: '100%',
+                
+
               }}
             >
               {/* 分类图标 */}

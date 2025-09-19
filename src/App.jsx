@@ -8,6 +8,7 @@ import { IoIosArrowBack } from "react-icons/io";
 import { IoIosArrowForward } from "react-icons/io";
 import { analyzeSpendingByAI } from './api/analyzeByAI';
 
+import { IoIosHome, IoIosCar, IoIosRestaurant } from 'react-icons/io'; // 导入react-icons图标
 
 
 
@@ -21,7 +22,7 @@ function App() {
   const [analysisResult, setAnalysisResult] = useState('');
   const [loadingAnalysis, setLoadingAnalysis] = useState(false);
 
-  
+
 
   const handlePrevMonth = () => {
     let y = currentYear;
@@ -169,8 +170,8 @@ function App() {
           </div>
           
 
-          {/* 卡片 */}
-          <div style={{ display: 'flex', gap: 10, flexDirection:'column', marginTop: 16 }}>
+          {/* 2. 卡片 */}
+          <div style={{ display: 'flex', gap: 10, flexDirection:'column', marginTop: 16,width:'100%',justifyContent:'center', alignItems:'center' }}>
             {monthData.cards.map((card, j) => (
               <BudgetCard
                 key={`${card.title}-${currentYear}-${currentMonth}`}
@@ -193,6 +194,7 @@ function App() {
             ))}
           </div>
 
+          {/* 3. 获取AI分析按钮 */}
           <button
             onClick={async () => {
               setLoadingAnalysis(true);// 设置加载状态为 true，表示开始分析
@@ -217,7 +219,7 @@ function App() {
             {loadingAnalysis ? '分析中...' : 'AI 分析这个月的消费习惯'}
           </button>
 
-          {/* 如果分析结果不为空，展示下面内容 */}
+          {/* 4. 如果分析结果不为空，展示下面内容 */}
           {analysisResult && (
             <div
               style={{

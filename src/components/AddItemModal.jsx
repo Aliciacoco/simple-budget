@@ -12,14 +12,12 @@ function AddItemModal({ onClose, onSubmit }) {
     const [amount, setAmount] = useState('');
 
      // 使用 useRef 获取输入框引用
-    const amountInputRef = useRef(null);
+    const inputRef = useRef(null);
 
     // 点击按钮时自动聚焦输入框
     useEffect(() => {
-      if (amountInputRef.current) {
-        amountInputRef.current.focus(); // 聚焦金额输入框
-      }
-    }, []); // 只在弹窗打开时执行一次
+      inputRef.current.focus(); // 聚焦金额输入框
+    }, []); 
     
     //提交处理逻辑
     const handleSubmit = () => {
@@ -128,7 +126,7 @@ function AddItemModal({ onClose, onSubmit }) {
       />
 
       {/* 输入金额 */}
-      <input
+      <input ref={inputRef}
         placeholder="金额"
         inputMode="decimal"
         type="number"
